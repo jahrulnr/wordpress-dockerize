@@ -17,6 +17,6 @@ RUN apt-get update \
 		&& mv wp-cli.phar /usr/local/bin/wp \
 		&& apt-get autoremove -y \
 		&& apt-get clean \
-		&& rm -rf /etc/nginx/conf.d /var/lib/apt/lists/* /tmp/* /var/tmp/*
+		&& rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY ./wordpress /var/www/html

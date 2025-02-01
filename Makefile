@@ -1,12 +1,18 @@
 build:
-	docker build -t wordpress:dev . --no-cache
+	docker build -t wordpress:dev . -f docker/Dockerfile
+build-prod:
+	docker build -t wordpress:dev . -f docker/Dockerfile --build-arg "DOCKER_ENV=production"
 
 up: build
-	docker compose up -d && docker compose logs -f
+	docker compose -f docker/compose.yml up -d
+	docker compose -f docker/compose.yml logs -f
 
 down:
-	docker compose down --remove-orphans
+	docker compose -f docker/compose.yml down --remove-orphans
 
-save: build
+shell:
+	docker exec -itu 1000:1000 wordpress bash
+
+save: build-prod
 	docker save wordpress:dev | gzip > wordpress.tar.gz
 	zip -r data-wordpress.zip wordpress

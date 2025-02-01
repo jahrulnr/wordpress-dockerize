@@ -1,0 +1,49 @@
+{
+    frankenphp {
+        workers auto
+        php_ini_path /usr/local/etc/php/php.ini
+    }
+
+	order php_server before file_server
+	order php before file_server
+}
+
+:80 {
+    # Root directory
+    root * /web/www
+    encode zstd br gzip
+
+    # Logging setup (access and error logs)
+    log {
+        output file /var/www/access.log
+        format json
+    }
+
+    @hiddenPhpFilesRegexp path_regexp \..*/.*\.php$
+	error @hiddenPhpFilesRegexp 404
+
+    @protectedFilesRegexp {
+		not path /.well-known*
+		path_regexp \.(sh|.*sql|op)(~|\.sw[op]|\.bak|\.orig|\.save)?$|^/(\..*|composer\.(json|lock)|web\.config|yarn\.lock|package\.json)$|^\/#.*#$|\.php(~|\.sw[op]|\.bak|\.orig|\.save)$
+	}
+	error @protectedFilesRegexp 403
+
+    @notFoundRootFilesRegexp path_regexp ^/.*(README\.md|INSTALL\.txt)$
+    error @notFoundRootFilesRegexp 404
+
+    @static {
+		file
+		path *.avif *.css *.eot *.gif *.gz *.ico *.jpg *.jpeg *.js *.otf *.pdf *.png *.svg *.ttf *.webp *.woff *.woff2
+	}
+	header @static Cache-Control "max-age=31536000,public,immutable" 
+    
+    @disallowed {
+		path /xmlrpc.php
+		path *.sql
+		path /wp-content/uploads/*.php
+	}
+
+    rewrite @disallowed '/index.php'
+
+    php_server
+}

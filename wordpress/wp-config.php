@@ -71,6 +71,24 @@ define('WP_REDIS_PORT', getenv_docker('WORDPRESS_REDIS_PORT', '6379'));
 define('WP_REDIS_PASSWORD', getenv_docker('WORDPRESS_REDIS_PASSWORD', null));
 define('WP_REDIS_DATABASE', getenv_docker('WORDPRESS_REDIS_DATABASE', 0));
 
+/*** Filesystem configuration. */
+define( 'FS_METHOD', 'direct' );
+
+/*** Docker Dev configuration. */
+if (getenv_docker('WORDPRESS_ENV', 'production') == 'local') {
+	define('.COOKIE_DOMAIN.', 'localhost:8008');
+	define('.SITECOOKIEPATH.', '.');
+	if(isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+		$list = explode(',',$_SERVER['HTTP_X_FORWARDED_FOR']);
+		$_SERVER['REMOTE_ADDR'] = $list[0];
+  }
+	define( 'WP_HOME', 'http://localhost:8008' );
+	define( 'WP_SITEURL', 'http://localhost:8008' );
+	$_SERVER['HTTP_HOST'] = 'localhost:8008';
+	$_SERVER['REMOTE_ADDR'] = 'http://localhost:8008';
+	$_SERVER['SERVER_ADDR' ] = 'localhost:8008';
+}
+
 /**#@+
  * Authentication unique keys and salts.
  *

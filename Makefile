@@ -1,7 +1,5 @@
 build:
-	docker build -t wordpress:dev . -f docker/Dockerfile
-build-prod:
-	docker build -t wordpress:dev . -f docker/Dockerfile --build-arg "DOCKER_ENV=production"
+	docker build -t wordpress:1.1 . -f docker/Dockerfile
 
 up: build
 	docker compose -f docker/compose.yml up -d
@@ -13,6 +11,5 @@ down:
 shell:
 	docker exec -itu 1000:1000 wordpress bash
 
-save: build-prod
+save: build
 	docker save wordpress:dev | gzip > wordpress.tar.gz
-	zip -r data-wordpress.zip wordpress

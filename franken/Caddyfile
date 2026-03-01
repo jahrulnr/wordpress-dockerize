@@ -15,7 +15,7 @@
 
     # Logging setup (access and error logs)
     log {
-        output file /apps/logs/access.log
+        output file /web/logs/access.log
         format json
     }
 

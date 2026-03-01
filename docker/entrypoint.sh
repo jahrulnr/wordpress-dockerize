@@ -21,7 +21,7 @@ if [ ! -e index.php ] && [ ! -e wp-includes/version.php ]; then
 	sourceTarArgs=(
 		--create
 		--file -
-		--directory /usr/src/wordpress
+		--directory /web/www
 		--owner "$user" --group "$group"
 	)
 	targetTarArgs=(
@@ -35,12 +35,12 @@ if [ ! -e index.php ] && [ ! -e wp-includes/version.php ]; then
 	# loop over "pluggable" content in the source, and if it already exists in the destination, skip it
 	# https://github.com/docker-library/wordpress/issues/506 ("wp-content" persisted, "akismet" updated, WordPress container restarted/recreated, "akismet" downgraded)
 	for contentPath in \
-		/usr/src/wordpress/.htaccess \
-		/usr/src/wordpress/wp-content/*/*/ \
+		/web/www/.htaccess \
+		/web/www/wp-content/*/*/ \
 	; do
 		contentPath="${contentPath%/}"
 		[ -e "$contentPath" ] || continue
-		contentPath="${contentPath#/usr/src/wordpress/}" # "wp-content/plugins/akismet", etc.
+		contentPath="${contentPath#/web/www/}" # "wp-content/plugins/akismet", etc.
 		if [ -e "$PWD/$contentPath" ]; then
 			echo >&2 "WARNING: '$PWD/$contentPath' exists! (not copying the WordPress version)"
 			sourceTarArgs+=( --exclude "./$contentPath" )
@@ -54,7 +54,7 @@ wpEnvs=( "${!WORDPRESS_@}" )
 if [ ! -s wp-config.php ] && [ "${#wpEnvs[@]}" -gt 0 ]; then
 	for wpConfigDocker in \
 		wp-config-docker.php \
-		/usr/src/wordpress/wp-config-docker.php \
+		/web/www/wp-config-docker.php \
 	; do
 		if [ -s "$wpConfigDocker" ]; then
 			echo >&2 "No 'wp-config.php' found in $PWD, but 'WORDPRESS_...' variables supplied; copying '$wpConfigDocker' (${wpEnvs[*]})"
@@ -80,5 +80,14 @@ fi
 
 mkdir -p /web/logs
 chown $uid:$gid /web/logs
+if [ -z "$(ls -A /web/www/wp-content 2>/dev/null)" ]; then
+    mv /web/setup/wp-content/* /web/www/wp-content/
+fi
+if ! nc -z "$WORDPRESS_REDIS_HOST" "$WORDPRESS_REDIS_PORT" 2>/dev/null; then
+    echo "Redis $WORDPRESS_REDIS_HOST:$WORDPRESS_REDIS_PORT unreachable, delete wp-content/object-cache.php..."
+    rm -f /web/www/wp-content/object-cache.php
+fi
+
+rm -rf /web/setup/wp-content
 
 exec "$@"

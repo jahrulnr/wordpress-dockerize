@@ -1,17 +1,15 @@
 services:
   wordpress:
-    image: wordpress:dev
+    image: wordpress:1.1
     restart: always
     container_name: wordpress
-    cpus: 0.5
-    mem_limit: 512m
     ports:
       - 8008:80
     environment:
       WORDPRESS_DB_HOST: database
       WORDPRESS_DB_USER: root
       WORDPRESS_DB_PASSWORD: root
-      WORDPRESS_DB_NAME: devdata
+      WORDPRESS_DB_NAME: web_profile
       WORDPRESS_REDIS_CLIENT: phpredis
       WORDPRESS_REDIS_HOST: redis
       WORDPRESS_REDIS_PORT: 6379
@@ -19,7 +17,8 @@ services:
       WORDPRESS_REDIS_DATABASE: 9
       WORDPRESS_ENV: local
     volumes:
-      - ../wordpress:/web/www
+      - ../data/content:/web/www/wp-content
+      - ../data/logs:/web/logs
     networks:
       - services
 

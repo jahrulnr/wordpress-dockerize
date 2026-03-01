@@ -1,5 +1,5 @@
-FROM wordpress:6.7-php8.3 AS SOURCE
-FROM dunglas/frankenphp:1-php8.3-bookworm AS BASE
+FROM wordpress:6.9-php8.4 AS source
+FROM dunglas/frankenphp:1.4.2-php8.4
 
 RUN apt-get update \
 		&& apt install -y --no-install-recommends \
@@ -7,6 +7,7 @@ RUN apt-get update \
 			tzdata \
 			supervisor \
 			imagemagick \
+			less \
     && install-php-extensions \
 			apcu \
 			gd \
@@ -32,7 +33,6 @@ RUN apt-get update \
 
 # available option local, production
 WORKDIR /web/www
-ARG DOCKER_ENV=local
 ENV TZ=Asia/Jakarta \
 		WORDPRESS_DB_HOST=database \
 		WORDPRESS_DB_NAME=devdata \
@@ -40,10 +40,10 @@ ENV TZ=Asia/Jakarta \
 		WORDPRESS_DB_PASSWORD=root \
 		WORDPRESS_TABLE_PREFIX=wp_ \
 		WORDPRESS_DEBUG=0
-COPY --from=SOURCE /usr/src/wordpress /usr/src/wordpress
-COPY --chown=www-data:www-data ./wordpress /web/www
-COPY ./franken/${DOCKER_ENV}-Caddyfile  /etc/caddy/Caddyfile
-COPY ./php/${DOCKER_ENV}-php.ini /usr/local/etc/php/php.ini
+COPY --from=source /usr/src/wordpress /web/www
+COPY --from=source /usr/src/wordpress/wp-content /web/setup/wp-content
+COPY ./franken/Caddyfile  /etc/caddy/Caddyfile
+COPY ./php/php.ini /usr/local/etc/php/php.ini
 COPY ./docker/supervisord.conf /etc/supervisord.conf
 COPY ./docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

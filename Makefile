@@ -12,4 +12,4 @@ shell:
 	docker exec -itu 1000:1000 wordpress bash
 
 save: build
-	docker save wordpress:dev | gzip > wordpress.tar.gz
+	docker save wordpress:1.1 | gzip > wordpress.tar.gz

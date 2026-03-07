@@ -22,8 +22,6 @@ RUN apt-get update \
 			exif \
 		# && pecl install redis -o -f redis \
 		# && echo "extension=redis.so" > /usr/local/etc/php/conf.d/redis.ini \
-		&& groupmod www-data -g 1000 \
-		&& usermod www-data -u 1000 -g 1000 \
 		&& curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
 		&& chmod +x wp-cli.phar \
 		&& mv wp-cli.phar /usr/local/bin/wp \
@@ -33,6 +31,10 @@ RUN apt-get update \
 
 # available option local, production
 WORKDIR /web/www
+
+RUN groupmod www-data -g 101 \
+		&& usermod www-data -u 100 -g 101
+
 ENV TZ=Asia/Jakarta \
 		WORDPRESS_DB_HOST=database \
 		WORDPRESS_DB_NAME=devdata \
@@ -40,6 +42,7 @@ ENV TZ=Asia/Jakarta \
 		WORDPRESS_DB_PASSWORD=root \
 		WORDPRESS_TABLE_PREFIX=wp_ \
 		WORDPRESS_DEBUG=0
+
 COPY --from=source /usr/src/wordpress /web/www
 COPY --from=source /usr/src/wordpress/wp-content /web/setup/wp-content
 COPY ./franken/Caddyfile  /etc/caddy/Caddyfile

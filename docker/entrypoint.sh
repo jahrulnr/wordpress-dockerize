@@ -3,8 +3,8 @@ set -Eeuo pipefail
 
 # uid="$(id -u)"
 # gid="$(id -g)"
-uid=1000
-gid=1000
+uid=100
+gid=101
 user="$uid"
 group="$gid"
 
@@ -81,13 +81,15 @@ fi
 mkdir -p /web/logs
 chown $uid:$gid /web/logs
 if [ -z "$(ls -A /web/www/wp-content 2>/dev/null)" ]; then
+		mkdir -p /web/www/wp-content/
     mv /web/setup/wp-content/* /web/www/wp-content/
+		chown -R "$user:$group" /web/www/wp-content
 fi
 if ! nc -z "$WORDPRESS_REDIS_HOST" "$WORDPRESS_REDIS_PORT" 2>/dev/null; then
     echo "Redis $WORDPRESS_REDIS_HOST:$WORDPRESS_REDIS_PORT unreachable, delete wp-content/object-cache.php..."
     rm -f /web/www/wp-content/object-cache.php
 fi
 
-rm -rf /web/setup/wp-content
+# rm -rf /web/setup/wp-content
 
 exec "$@"

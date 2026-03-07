@@ -9,7 +9,7 @@ down:
 	docker compose -f docker/compose.yml down --remove-orphans
 
 shell:
-	docker exec -itu 1000:1000 wordpress bash
+	docker exec -itu 100:101 wordpress bash
 
 save: build
 	docker save wordpress:1.1 | gzip > wordpress.tar.gz
